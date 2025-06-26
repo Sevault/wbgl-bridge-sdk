@@ -28,7 +28,7 @@ describe('BGL class tests on BNB Chain', () => {
   let recepientBNBAddress: string
 
   beforeAll(async () => {
-    const bscProviderRpc = 'https://rpc.ankr.com/bsc'
+    const bscProviderRpc = 'https://rpc.ankr.com/bsc/31aef425877023a59a699600edf15a7e1c8981a27d07c80a962542dda946b1e0'
     // const MNEMONIC = process.env.MNEMONIC as string
     // const bglSeedPhrase = process.env.BGL_SEEDPHRASE
     const bglPrivateKey = process.env.BGL_PRIVATEKEY_OR_SEED
