@@ -5,18 +5,20 @@ import {
 
 import fetch from 'node-fetch'
 import WBGL_ABI from '../abi/WBGL'
-import { ChaindIds } from '../chains'
-import { IBridgeConfig } from '../types'
+import {ChaindIds} from '../chains'
+import {IBridgeConfig} from '../types'
 
 import {
   WBGL_CONTRACT_ADDRESS_BNB,
-  WBGL_CONTRACT_ADDRESS_ETH
+  WBGL_CONTRACT_ADDRESS_ETH,
+  WBGL_CONTRACT_ADDRESS_ARBITRUM,
+  WBGL_CONTRACT_ADDRESS_OPTIMISM
 } from './constants'
 
 /**
  * @param bglAddress is the address to receive BGL to
  * @param wbglAmount is the amount of WBGL tokens to swap for BGL amount
- * @param sourceWBGLAddress is the address/account containing WBGL tokens to swap. 
+ * @param sourceWBGLAddress is the address/account containing WBGL tokens to swap.
  * NOTE: should be address linked to the signer(wallet) to be able to sign messages authorizing the swap.
  */
 export interface WBGLBGLExchangePair {
@@ -59,9 +61,9 @@ export class WBGL {
    * swapWBGLforBGL swaps WBGL for BGL to recepient Bitgesell address
    */
   public async swapWBGLforBGL({
-    bglAddress,
-    wbglAmount,
-  }: WBGLBGLExchangePair): Promise<WBGLBGLExchangePairResult> {
+                                bglAddress,
+                                wbglAmount,
+                              }: WBGLBGLExchangePair): Promise<WBGLBGLExchangePairResult> {
     try {
       const signer = await this._getSigner()
       const account = await signer.getAddress()
@@ -87,7 +89,7 @@ export class WBGL {
 
       const bridgeResponse = await res.json()
 
-      const { address: sendAddress } = bridgeResponse
+      const {address: sendAddress} = bridgeResponse
 
       const txRes = await this._sendWbgl(sendAddress, wbglAmount) as WBGLBGLExchangePairResult
       return txRes
@@ -159,16 +161,34 @@ export class WBGL {
     }
   }
 
-  private _getWBGLTokenAddress(): string {
-    // @TODO: add Optimism and Arbitrum contract addresses
-    return this.isChainBsc(this.chainId) ? WBGL_CONTRACT_ADDRESS_BNB : WBGL_CONTRACT_ADDRESS_ETH
+  private isChainEth(chainId: string | number): boolean {
+    return chainId === ChaindIds.Ethereum || chainId === 1
   }
 
-
-  // @TODO: include Arbitrum, Optimism checks
   private isChainBsc(chainId: string | number): boolean {
-    const bscChainIds: (string | number)[] = ['0x38', '0x61'] // BNB Smart Chain (Mainnet & Testnet) chain IDs
-    return bscChainIds.includes(chainId)
+    return chainId === ChaindIds.BNBSmartChain || chainId === '0x61' || chainId === 56 || chainId === 97
+  }
+
+  private isChainArbitrum(chainId: string | number): boolean {
+    return chainId === ChaindIds.ArbitrumOne || chainId === 42161
+  }
+
+  private isChainOptimism(chainId: string | number): boolean {
+    return chainId === ChaindIds.Optimism || chainId === 10
+  }
+
+  private _getWBGLTokenAddress(): string {
+    if (this.isChainBsc(this.chainId)) {
+      return WBGL_CONTRACT_ADDRESS_BNB
+    } else if (this.isChainArbitrum(this.chainId)) {
+      return WBGL_CONTRACT_ADDRESS_ARBITRUM
+    } else if (this.isChainOptimism(this.chainId)) {
+      return WBGL_CONTRACT_ADDRESS_OPTIMISM
+    } else if (this.isChainEth(this.chainId)) {
+      return WBGL_CONTRACT_ADDRESS_ETH
+    } else {
+      throw new Error(`Unsupported chainId: ${this.chainId}`)
+    }
   }
 
   private async _getSigner() {
