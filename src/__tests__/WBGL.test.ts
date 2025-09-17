@@ -1,5 +1,6 @@
 import { ethers } from 'ethers'
 import * as matchers from 'jest-extended'
+import * as dotenv from 'dotenv'
 
 import WBGLBridgeSDK, {
   ChaindIds,
@@ -11,20 +12,21 @@ import { WBGLBGLExchangePair } from '../bridge/WBGL'
 
 expect.extend(matchers)
 
-console.log(process.env.evmPrivateKey)
 describe('WBGL class tests on Ethereum', () => {
 
   let WBGLSDKInstance: WBGLBridgeSDK
   let provider: ethers.providers.JsonRpcProvider | ethers.providers.Web3Provider
   // const recepientWBGLAddress = ''
   const bglAddress = 'bgl1qh3tsz3a7l3m49xaq4xcdx8aefthchuqagmspcn'
-  let bnbAddress: string
+  let bnbAddress: string = ''
+
 
   beforeAll(async () => {
-    const bscProvider = 'https://rpc.ankr.com/bsc'
-    // const MNEMONIC = process.env.MNEMONIC 
+    dotenv.config()
+    const bscRpc = 'https://rpc.ankr.com/bsc/31aef425877023a59a699600edf15a7e1c8981a27d07c80a962542dda946b1e0'
+    // const MNEMONIC = process.env.MNEMONIC
 
-    provider = new ethers.providers.JsonRpcProvider(bscProvider)
+    provider = new ethers.providers.JsonRpcProvider(bscRpc)
 
     const config: IBridgeConfig = {
       evmPrivateKey: process.env.EVM_PRIVATE_KEY as string,
